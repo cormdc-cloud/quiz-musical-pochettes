@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Pochette d'Album (Artiste & Titre)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a202c; /* Gris foncé/Noir */
+            color: #e2e8f0; /* Gris clair */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            width: 100%;
+            max-width: 700px;
+            background-color: #2d3748; /* Gris moyen */
+            padding: 30px;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.5);
+        }
+        .answer-button {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-align: left;
+            line-height: 1.4; /* Améliore la lisibilité des doubles lignes */
+        }
+        .answer-button:hover:not(.correct):not(.incorrect) {
+            background-color: #4a5568; /* Gris plus clair au survol */
+        }
+        .answer-button.correct {
+            background-color: #48bb78; /* Vert pour correct */
+            color: #1a202c;
+            border-color: #38a169;
+        }
+        .answer-button.incorrect {
+            background-color: #f56565; /* Rouge pour incorrect */
+            color: #1a202c;
+            border-color: #e53e3e;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 class="text-3xl font-bold mb-6 text-center text-blue-400">Quiz : Devinez la Pochette d'Album</h1>
+    <div id="quiz-container">
+        <!-- Contenu du quiz affiché ici -->
+    </div>
+</div>
+
+<script>
+    // Configuration de la liste de questions avec Artiste et Titre
+    const quizData = [
+        {
+            description: "Un bébé nage nu sous l'eau vers un billet d'un dollar accroché à un hameçon.",
+            options: [
+                "Radiohead - OK Computer",
+                "Green Day - Dookie",
+                "Nirvana - Nevermind",
+                "Coldplay - A Rush of Blood to the Head"
+            ],
+            answer: "Nirvana - Nevermind"
+        },
+        {
+            description: "Les quatre membres du groupe traversent un passage piéton en file indienne, photographiés depuis le côté opposé de la route.",
+            options: [
+                "Pink Floyd - The Dark Side of the Moon",
+                "The Beatles - Abbey Road",
+                "Led Zeppelin - Led Zeppelin IV",
+                "Fleetwood Mac - Rumours"
+            ],
+            answer: "The Beatles - Abbey Road"
+        },
+        {
+            description: "Un prisme de verre décomposant un rayon de lumière blanche en un spectre de couleurs. Le fond est entièrement noir.",
+            options: [
+                "Pink Floyd - Wish You Were Here",
+                "Pink Floyd - The Dark Side of the Moon",
+                "King Crimson - In the Court of the Crimson King",
+                "The Beatles - Sgt. Pepper's Lonely Hearts Club Band"
+            ],
+            answer: "Pink Floyd - The Dark Side of the Moon"
+        },
+        {
+            description: "Un portrait de l'artiste avec un éclair peint sur son visage, de l'épaule droite à la hanche gauche.",
+            options: [
+                "David Bowie - Hunky Dory",
+                "David Bowie - Low",
+                "David Bowie - Aladdin Sane",
+                "T. Rex - Electric Warrior"
+            ],
+            answer: "David Bowie - Aladdin Sane"
+        },
+        {
+            description: "Un mur de briques blanches, avec le titre et le nom de l'artiste écrits comme des graffitis au pochoir.",
+            options: [
+                "The Clash - London Calling",
+                "AC/DC - Back in Black",
+                "Pink Floyd - The Wall",
+                "The Rolling Stones - Sticky Fingers"
+            ],
+            answer: "Pink Floyd - The Wall"
+        },
+        {
+            description: "Un homme en costume blanc et chapeau noir, les bras croisés, photographié en gros plan. La pochette est rehaussée de rayures rouges, vertes et bleues.",
+            options: [
+                "Michael Jackson - Bad",
+                "Michael Jackson - Off the Wall",
+                "Madonna - Like a Virgin", // Option corrigée
+                "Prince - Purple Rain"
+            ],
+            answer: "Michael Jackson - Thriller"
+        },
+        {
+            description: "Une image très sombre montrant à peine le bâtiment d'une centrale électrique (Battersea Power Station) surmontée de quatre cheminées, un cochon gonflable planant au-dessus.",
+            options: [
+                "Pink Floyd - A Momentary Lapse of Reason",
+                "Pink Floyd - Animals",
+                "Pink Floyd - The Division Bell",
+                "Led Zeppelin - Houses of the Holy"
+            ],
+            answer: "Pink Floyd - Animals"
+        },
+        {
+            description: "Une main robotique serrant une main humaine. L'arrière-plan est simple et blanc.",
+            options: [
+                "Daft Punk - Homework",
+                "Daft Punk - Random Access Memories",
+                "Daft Punk - Discovery",
+                "Justice - †"
+            ],
+            answer: "Daft Punk - Discovery"
+        },
+        {
+            description: "Une photo floue et tamisée en noir et blanc d'un homme et d'une femme posant de manière théâtrale dans une ambiance de chambre victorienne.",
+            options: [
+                "Fleetwood Mac - Tusk",
+                "Fleetwood Mac - Rumours",
+                "Fleetwood Mac - Say You Will",
+                "Eagles - Hotel California"
+            ],
+            answer: "Fleetwood Mac - Rumours"
+        },
+        {
+            description: "Un fond noir uni, avec seulement le titre de l'album et le nom du groupe écrits en blanc, de manière très sobre.",
+            options: [
+                "AC/DC - Highway to Hell",
+                "AC/DC - The Razor's Edge",
+                "AC/DC - Back in Black",
+                "Metallica - Black Album"
+            ],
+            answer: "AC/DC - Back in Black"
+        }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let answered = false;
+    const quizContainer = document.getElementById('quiz-container');
+
+    /**
+     * Affiche la question courante et ses options.
+     */
+    function displayQuestion() {
+        if (currentQuestionIndex >= quizData.length) {
+            showResults();
+            return;
+        }
+
+        const q = quizData[currentQuestionIndex];
+        answered = false;
+
+        let html = `
+            <div class="mb-8 p-4 bg-gray-600 rounded-lg shadow-inner">
+                <p class="text-xl font-semibold mb-4 text-yellow-300">Question ${currentQuestionIndex + 1} / ${quizData.length}</p>
+                <p class="text-lg mb-4 leading-relaxed">
+                    Je décris la pochette de l'album : <span class="font-medium text-white">${q.description}</span>
+                </p>
+            </div>
+            <div class="space-y-3">
+        `;
+
+        q.options.forEach((option, index) => {
+            // Remplacer " - " par un saut de ligne pour une meilleure lisibilité dans les boutons sur mobile
+            const displayOption = option.replace(" - ", "<br class='sm:hidden'/> - ");
+            html += `
+                <button
+                    class="answer-button w-full p-3 rounded-lg border-2 border-gray-500 bg-gray-700 text-base font-medium hover:bg-gray-600"
+                    data-answer="${option}"
+                    onclick="checkAnswer(this, '${q.answer}')"
+                    id="btn-${index}"
+                >
+                    ${displayOption}
+                </button>
+            `;
+        });
+
+        html += `</div>`;
+        quizContainer.innerHTML = html;
+    }
+
+    /**
+     * Vérifie la réponse sélectionnée.
+     * @param {HTMLElement} button - Le bouton cliqué.
+     * @param {string} correctAnswer - La réponse correcte.
+     */
+    function checkAnswer(button, correctAnswer) {
+        if (answered) return;
+
+        answered = true;
+        const selectedAnswer = button.getAttribute('data-answer');
+        const isCorrect = selectedAnswer === correctAnswer;
+
+        // Désactiver tous les boutons et appliquer les styles de correction
+        const buttons = quizContainer.querySelectorAll('.answer-button');
+        buttons.forEach(btn => {
+            btn.disabled = true;
+            if (btn.getAttribute('data-answer') === correctAnswer) {
+                btn.classList.add('correct');
+            } else if (btn === button && !isCorrect) {
+                btn.classList.add('incorrect');
+            } else {
+                // Diminuer l'opacité des autres options non sélectionnées
+                btn.classList.add('opacity-50');
+            }
+        });
+
+        if (isCorrect) {
+            score++;
+        }
+
+        // Ajouter un bouton "Question Suivante"
+        setTimeout(() => {
+            const nextButtonHtml = `
+                <div class="mt-6 text-center">
+                    <button
+                        onclick="nextQuestion()"
+                        class="px-6 py-3 bg-blue-500 text-white font-bold rounded-full shadow-lg hover:bg-blue-600 transition duration-150"
+                    >
+                        Question Suivante (${currentQuestionIndex + 1} / ${quizData.length})
+                    </button>
+                </div>
+            `;
+            quizContainer.insertAdjacentHTML('beforeend', nextButtonHtml);
+        }, 1500); // Délai pour laisser le temps de voir la correction
+    }
+
+    /**
+     * Passe à la question suivante.
+     */
+    function nextQuestion() {
+        currentQuestionIndex++;
+        displayQuestion();
+    }
+
+    /**
+     * Affiche les résultats finaux du quiz.
+     */
+    function showResults() {
+        const percentage = (score / quizData.length) * 100;
+        let message = "";
+        let colorClass = "";
+
+        if (percentage === 100) {
+            message = "Félicitations ! Vous êtes un véritable expert des pochettes d'albums !";
+            colorClass = "text-green-400";
+        } else if (percentage >= 70) {
+            message = "Excellent travail ! Vous avez une très bonne culture musicale.";
+            colorClass = "text-yellow-400";
+        } else if (percentage >= 40) {
+            message = "Pas mal ! Vous connaissez quelques classiques.";
+            colorClass = "text-orange-400";
+        } else {
+            message = "Un bon début ! Le monde des pochettes d'albums est vaste, continuez d'écouter et d'observer !";
+            colorClass = "text-red-400";
+        }
+
+
+        quizContainer.innerHTML = `
+            <div class="text-center p-8 border-4 border-blue-500 rounded-lg bg-gray-700">
+                <h2 class="text-4xl font-extrabold mb-4 text-white">Quiz Terminé !</h2>
+                <p class="text-2xl mb-6">Votre Score Final : <span class="text-5xl font-extrabold ${colorClass}">${score} / ${quizData.length}</span></p>
+                <p class="text-xl italic mb-8 ${colorClass}">${message}</p>
+                <button
+                    onclick="resetQuiz()"
+                    class="px-6 py-3 bg-blue-500 text-white font-bold rounded-full shadow-lg hover:bg-blue-600 transition duration-150"
+                >
+                    Recommencer le Quiz
+                </button>
+            </div>
+        `;
+    }
+
+    /**
+     * Réinitialise le quiz.
+     */
+    function resetQuiz() {
+        currentQuestionIndex = 0;
+        score = 0;
+        displayQuestion();
+    }
+
+    // Démarrer le quiz
+    window.onload = displayQuestion;
+
+</script>
+
+</body>
+</html>
